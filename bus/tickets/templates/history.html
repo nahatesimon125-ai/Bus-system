@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+        <div>
+            <h2 class="text-xl font-black text-slate-900 tracking-tight font-display">My Booking Vouchers</h2>
+            <p class="text-slate-500 text-xs">Verify travel statuses and download passenger board passes</p>
+        </div>
+        <a href="{% url 'trips' %}" class="px-3.5 py-1.8 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Book Another Trip
+        </a>
+    </div>
+
+    <!-- Empty booking list state -->
+    {% if not bookings %}
+    <div class="bg-white border rounded-3xl p-12 text-center space-y-4 shadow-sm border-dashed border-slate-200">
+        <span class="text-4xl block">🎟️</span>
+        <h4 class="font-extrabold text-slate-800 text-sm font-display">No Previous Trips Found</h4>
+        <p class="text-slate-500 text-xs max-w-sm mx-auto">
+            You haven't booked any ticketing vouchers yet. Go to "Available Trips" above to reserve and pay dynamically!
+        </p>
+        <a href="{% url 'trips' %}" class="inline-block py-2 px-6 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors">
+            Find a Departure
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Bookings Listing cards -->
+    <div class="space-y-6">
+        {% for b in bookings %}
+        <div class="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded font-black text-blue-800 text-xs uppercase">
+                            {{ b.booking_ref }}
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-mono">
+                            Booked on {{ b.booking_date|date:"d M Y H:i" }}
+                        </span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-500">
+                        Departure Date: <span class="text-slate-800 font-extrabold">{{ b.trip.departure_time|date:"l, d M Y" }} at {{ b.trip.departure_time|date:"H:i" }}</span>
+                    </p>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {% if b.status == 'Confirmed' %}bg-emerald-50 text-emerald-800 border-emerald-200{% elif b.status == 'Completed' %}bg-blue-50 text-blue-800 border-blue-200{% else %}bg-rose-50 text-rose-800 border-rose-200{% endif %}">
+                        {{ b.status }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border border-slate-200 bg-slate-50 text-slate-600 font-mono uppercase">
+                        {{ b.payment_status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Route Track Info and Details -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <!-- Departure Station -->
+                <div class="md:col-span-4 bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                    <span class="text-[8.5px] uppercase font-mono font-bold text-slate-400 tracking-wider">Leave Station</span>
+                    <p class="text-sm font-black text-slate-800 font-display mt-0.5">{{ b.trip.route.departure }}</p>
+                    <span class="text-[10px] text-slate-400 font-mono tracking-wide">Departure terminal</span>
+                </div>
+                <!-- Connector Arrow -->
+                <div class="md:col-span-1 text-center justify-center items-center flex">
+                    <i data-lucide="arrow-right-circle" class="w-5 h-5 text-slate-400"></i>
+                </div>
+                <!-- Arrival Station -->
+                <div class="md:col-span-4 bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                    <span class="text-[8.5px] uppercase font-mono font-bold text-slate-400 tracking-wider">Destination Station</span>
+                    <p class="text-sm font-black text-slate-800 font-display mt-0.5">{{ b.trip.route.destination }}</p>
+                    <span class="text-[10px] text-slate-400 font-mono tracking-wide">Arrival terminal</span>
+                </div>
+                <!-- Premium pricing & seats count -->
+                <div class="md:col-span-3 text-right">
+                    <span class="text-[9px] uppercase font-semibold text-slate-400 block">Assigned Seats</span>
+                    <p class="text-sm font-black text-blue-600 font-mono mt-0.5">Seats: {{ b.selected_seats }}</p>
+                    <span class="text-[10px] text-slate-500 font-bold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded font-mono block w-max ml-auto mt-1">
+                        {{ b.trip.bus.type }} Coach
+                    </span>
+                </div>
+            </div>
+
+            <!-- Booking passenger manifest row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs">
+                <div>
+                    <span class="text-slate-400 font-bold block text-[9px] uppercase">Passenger Full Name:</span>
+                    <span class="font-extrabold text-slate-800 mt-0.5 block">{{ b.passenger_name }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold block text-[9px] uppercase">Contact Telephone:</span>
+                    <span class="font-mono text-slate-700 mt-0.5 block">{{ b.passenger_phone }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold block text-[9px] uppercase">Transit Company:</span>
+                    <span class="font-bold text-slate-700 mt-0.5 block">NTS Regional Buses Ltd</span>
+                </div>
+            </div>
+
+            <!-- Action footer elements -->
+            <div class="border-t border-dashed border-slate-200/90 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-[9px] font-bold text-slate-400 block uppercase">Total Amount Settled</span>
+                    <span class="text-base font-black font-mono text-blue-600">{{ b.total_amount|default:"0" }} UGX</span>
+                </div>
+                
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    {% if b.status == 'Confirmed' %}
+                    <a href="{% url 'cancel_booking' b.id %}" onclick="return confirm('Are you sure you want to cancel this booking and release seats?')" class="px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl font-bold text-xs transition-colors border border-rose-100">
+                        Cancel Booking
+                    </a>
+                    {% endif %}
+                    <button type="button" onclick="showTicketVoucher('{{ b.booking_ref }}')" class="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-sm shadow-blue-600/15 flex items-center gap-1.5 transition-all">
+                        🎫 Print Ticket Voucher
+                    </button>
+                </div>
+            </div>
+            
+            <!-- HIDDEN PHYSICAL TICKET CONTAINER PRINT SLIP (Rendered inside printable popup overlay) -->
+            <div id="voucher-pass-{{ b.booking_ref }}" class="hidden">
+                <div class="bg-amber-50/20 border-2 border-dashed border-amber-500/40 rounded-3xl p-6 shadow-sm relative overflow-hidden font-sans text-slate-800 border-spacing-2">
+                    
+                    <!-- Decorative scissor icons -->
+                    <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-dashed border-slate-350"></div>
+                    <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-dashed border-slate-350"></div>
+                    
+                    <div class="border-b-2 border-dashed border-slate-200/80 pb-4 mb-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-extrabold text-xs tracking-widest text-blue-600 uppercase">NATIONAL REGIONAL TRANSIT</h3>
+                            <span class="text-[8.5px] uppercase font-bold text-slate-400 font-mono block tracking-wider">BOARDING VOUCHER • OFFICIAL TICKET</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-mono font-black text-sm text-slate-900 border-2 border-double border-slate-800 px-2 py-0.5 rounded uppercase bg-slate-50 select-all tracking-wide">
+                                {{ b.booking_ref }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">Passenger manifest</span>
+                                <p class="text-xs font-black text-slate-800 mt-0.5">{{ b.passenger_name }}</p>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ b.passenger_phone }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">Assigned seats list</span>
+                                <p class="text-sm font-black text-blue-600 font-mono tracking-wider mt-0.5">SEAT(S) {{ b.selected_seats }}</p>
+                                <span class="text-[9.5px] text-slate-400 font-medium">VIP premiums included and cleared</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 border-l border-slate-100 pl-4">
+                            <div>
+                                <span class="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">Departure station details</span>
+                                <p class="text-xs font-extrabold text-slate-800 mt-0.5">{{ b.trip.route.departure }} ➜ {{ b.trip.route.destination }}</p>
+                                <span class="text-[10px] text-slate-400 font-mono">Distance: {{ b.trip.route.distance }} (est. {{ b.trip.route.estimated_time }})</span>
+                            </div>
+                            <div>
+                                <span class="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">departure time schedule</span>
+                                <p class="text-xs font-black text-indigo-950 mt-0.5">{{ b.trip.departure_time|date:"l, d F Y" }}</p>
+                                <span class="text-xs font-bold text-blue-600 font-mono block mt-0.5">LEAVING AT {{ b.trip.departure_time|date:"H:i" }} HRS</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-between border-l border-slate-100 pl-4 text-center">
+                            <!-- Visual Barcode Block Representation -->
+                            <div class="space-y-1 w-full bg-slate-100 p-2 border border-slate-200/50 rounded-2xl flex flex-col justify-center items-center">
+                                <div class="h-8 w-32 bg-slate-900 border-l border-r border-slate-900 flex justify-around">
+                                    <div class="w-[2px] h-full bg-white"></div>
+                                    <div class="w-[4px] h-full bg-white"></div>
+                                    <div class="w-[3px] h-full bg-white"></div>
+                                    <div class="w-[1px] h-full bg-white"></div>
+                                    <div class="w-[5px] h-full bg-white"></div>
+                                    <div class="w-[2px] h-full bg-white"></div>
+                                </div>
+                                <span class="text-[8px] font-mono font-bold text-slate-505 tracking-wider select-none">CODE-NTS-UG-{{ b.id }}</span>
+                            </div>
+                            <div class="w-full text-right">
+                                <span class="text-[8px] font-bold text-slate-400 block uppercase">amount cleared (UGX)</span>
+                                <span class="text-base font-black font-mono text-slate-800">{{ b.total_amount }} UGX</span>
+                                <span class="text-[7.5px] font-bold text-emerald-600 block uppercase tracking-wide">✔ PAID VIA {{ b.get_payment_method_display|upper }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gate instructions -->
+                    <div class="border-t border-slate-100 mt-5 pt-3.5 flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-400 font-medium">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600"></i>
+                            Present either this mobile slip or a printed form at the bus gate 15 mins before board-time.
+                        </span>
+                        <span class="font-mono text-[9px] mt-1 sm:mt-0">Operator: {{ b.trip.bus.name }} ({{ b.trip.bus.plate_number }})</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ================= DIGITAL VOUCHER MODAL OVERLAY ================= -->
+<div id="voucher-printout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative border border-slate-100 animate-in fade-in zoom-in duration-100">
+        <!-- Close -->
+        <button onclick="closeModal('voucher-printout-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <div class="mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+                <i data-lucide="printer" class="w-5 h-5 text-blue-600"></i>
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider font-display">Bus Digital Board Pass</h3>
+            </div>
+            <button type="button" onclick="window.print()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center gap-1 transition-colors">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                Send to Printer / save PDF
+            </button>
+        </div>
+
+        <!-- Inject Container body -->
+        <div id="ticket-modal-inject-box" class="py-2">
+            <!-- Dynamically populated via Javascript -->
+        </div>
+
+        <p class="text-[10px] text-slate-400 text-center mt-4">
+            NTS Travel Uganda Ticket receipts are persistable locally in your personal vouchers menu under real-time SQLite database storage.
+        </p>
+    </div>
+</div>
+
+<script>
+    function showTicketVoucher(ref) {
+        const sourceHtml = document.getElementById(`voucher-pass-${ref}`).innerHTML;
+        document.getElementById('ticket-modal-inject-box').innerHTML = sourceHtml;
+        
+        // Render lucide icons in the newly injected HTML
+        setTimeout(() => {
+            lucide.createIcons();
+        }, 50);
+
+        openModal('voucher-printout-modal');
+    }
+</script>
+{% endblock %}
