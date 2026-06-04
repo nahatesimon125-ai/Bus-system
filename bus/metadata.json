@@ -1,0 +1,8 @@
+{
+  "name": "NTS Bus Tickets",
+  "description": "Premium regional bus ticketing and seat booking platform with cashless mobile money support in Uganda.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
