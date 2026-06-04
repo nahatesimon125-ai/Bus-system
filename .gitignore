@@ -6,3 +6,19 @@ coverage/
 *.log
 .env*
 !.env.example
+# Python/Django
+*.py[cod]
+__pycache__/
+db.sqlite3
+venv/
+env/
+/.venv
+*.sqlite3
+
+# Static files collected
+staticfiles/
+/staticfiles/
+
+# Editor directories
+.vscode/
+.idea/
