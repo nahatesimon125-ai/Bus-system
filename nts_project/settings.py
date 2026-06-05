@@ -23,11 +23,9 @@ if not DEBUG and SECRET_KEY == _DEFAULT_SECRET:
 
 # Keep ALLOWED_HOSTS permissive by default. In production, set the
 # DJANGO_ALLOWED_HOSTS environment variable to a comma-separated list.
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-    if host.strip()
-]
+
+ALLOWED_HOSTS = ['bus-system-l0pu.onrender.com', 'localhost', '127.0.0.1']
+
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
